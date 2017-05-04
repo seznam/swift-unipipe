@@ -18,16 +18,21 @@ public class UniPipe {
 	private var buffer: UnsafeMutablePointer<UInt8>
 	private let bufferSize = 8192
 
-	public init() throws {
+	public init(nonblockReadEnd: Bool = true, nonblockWriteEnd: Bool = true) throws {
 		if pipe(&fd) != 0 {
 			throw UniPipeError.error(detail: "pipe() failed, \(String(validatingUTF8: strerror(errno)) ?? "")")
 		}
 		for i in fd {
+			if i == fd[0], !nonblockReadEnd {
+				continue
+			} else if i == fd[1], !nonblockWriteEnd {
+				continue
+			}
 			let flags = fcntl(i, F_GETFL)
 			guard flags != -1, fcntl(i, F_SETFL, flags | O_NONBLOCK) != -1 else {
 				throw UniPipeError.error(detail: "fcntl() failed, \(String(validatingUTF8: strerror(errno)) ?? "")")
 			}
-          }
+		}
 		buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferSize)
 	}
 
