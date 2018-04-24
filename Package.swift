@@ -8,6 +8,8 @@ let package = Package(
 		.library(name: "UniPipe", targets: ["UniPipe"])
 	],
 	targets: [
-		.target(name: "UniPipe")
-	]
+		.target(name: "UniPipe"),
+		.testTarget(name: "UniPipeTests", dependencies: ["UniPipe"])
+	],
+	swiftLanguageVersions: [4]
 )
