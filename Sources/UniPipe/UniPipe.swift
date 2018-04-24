@@ -46,22 +46,20 @@ public class UniPipe {
 	}
 
 	public func plug(keepReadEnd: Bool = false, keepWriteEnd: Bool = false) -> Void {
-		var closefd = [Int]()
 		if !keepReadEnd {
-			closefd.append(0)
+			close(fd[0])
+			fd[0] = -1
 		}
 		if !keepWriteEnd {
-			closefd.append(1)
-		}
-		for i in closefd {
-			if i > 0 {
-				close(fd[i])
-				fd[i] = -1
-			}
+			close(fd[1])
+			fd[1] = -1
 		}
 	}
 
 	public func read(min: Int = 1, max: Int? = nil, timeout: Int? = nil) throws -> Data {
+		guard fd[0] != -1 else {
+			throw UniPipeError.error(detail: "read end has been plugged")
+		}
 		var timelimit: Int?
 		if let t = timeout {
 			timelimit = time(nil) + t
@@ -98,6 +96,9 @@ public class UniPipe {
 	}
 
 	public func write(_ buffer: Data, timeout: Int? = nil) throws -> Void {
+		guard fd[1] != -1 else {
+			throw UniPipeError.error(detail: "write end has been plugged")
+		}
 		var timelimit: Int?
 		if let t = timeout {
 			timelimit = time(nil) + t
