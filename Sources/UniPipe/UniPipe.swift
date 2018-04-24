@@ -42,7 +42,7 @@ public class UniPipe {
 				close(i)
 			}
 		}
-		buffer.deallocate(capacity: bufferSize)
+		buffer.deallocate()
 	}
 
 	public func plug(keepReadEnd: Bool = false, keepWriteEnd: Bool = false) -> Void {
