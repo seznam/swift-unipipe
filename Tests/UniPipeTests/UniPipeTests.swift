@@ -11,6 +11,7 @@ class UniPipeTests: XCTestCase {
 		("testPlugRead", testPlugRead),
 		("testPlugWrite", testPlugWrite),
 		("testSigPipe", testSigPipe),
+		("testTimeout", testTimeout),
 	]
 
 	func testPing() {
@@ -77,6 +78,20 @@ class UniPipeTests: XCTestCase {
 			print(error)
 		}
 		XCTAssert(sigPipe == 1)
+	}
+
+	func testTimeout() {
+		let timeout = 2
+		let from = Date().timeIntervalSince1970
+		do {
+			let pipe = try UniPipe()
+			_ = try pipe.read(min: 1, timeout: timeout)
+		} catch {
+			print(error)
+		}
+		let to = Date().timeIntervalSince1970
+		let duration = to - from
+		XCTAssert(duration >= Double(timeout) && duration < Double(timeout + 1))
 	}
 
 }
