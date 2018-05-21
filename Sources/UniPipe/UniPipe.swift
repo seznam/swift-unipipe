@@ -1,5 +1,13 @@
 import Foundation
+#if os(macOS) || os(iOS) || os(tvOS)
+import Darwin
+private let system_read = Darwin.read
+private let system_write = Darwin.write
+#elseif os(Linux)
 import Glibc
+private let system_read = Glibc.read
+private let system_write = Glibc.write
+#endif
 
 public enum UniPipeError: Error {
 	case error(detail: String)
@@ -71,7 +79,7 @@ public class UniPipe {
 			if let m = max, (m - data.count) < bufferSize {
 				limit = m - data.count
 			}
-			rc = Glibc.read(fd[0], buffer, limit)
+			rc = system_read(fd[0], buffer, limit)
 			if rc == -1 {
 				if errno != EINTR && errno != EAGAIN {
 					let errstr = String(validatingUTF8: strerror(errno)) ?? ""
@@ -111,7 +119,7 @@ public class UniPipe {
 			}
 			let rangeLeft = Range(uncheckedBounds: (lower: buffer.index(buffer.startIndex, offsetBy: (buffer.count - bytesLeft)), upper: buffer.endIndex))
 			let bufferLeft = buffer.subdata(in: rangeLeft)
-			rc = bufferLeft.withUnsafeBytes { return Glibc.write(fd[1], $0, bytesLeft) }
+			rc = bufferLeft.withUnsafeBytes { return system_write(fd[1], $0, bytesLeft) }
 			if rc == -1 {
 				if errno != EINTR && errno != EAGAIN {
 					let errstr = String(validatingUTF8: strerror(errno)) ?? ""
