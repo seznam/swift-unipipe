@@ -139,7 +139,7 @@ public class UniPipe {
 			}
 			let rangeLeft = Range(uncheckedBounds: (lower: buffer.index(buffer.startIndex, offsetBy: (buffer.count - bytesLeft)), upper: buffer.endIndex))
 			let bufferLeft = buffer.subdata(in: rangeLeft)
-			rc = bufferLeft.withUnsafeBytes { return system_write(fd[1], $0, bytesLeft) }
+			rc = bufferLeft.withUnsafeBytes { (ptr: UnsafeRawBufferPointer) -> Int in return system_write(fd[1], ptr.baseAddress, bytesLeft) }
 			if rc == -1 {
 				if errno != EINTR && errno != EAGAIN {
 					let errstr = String(validatingUTF8: strerror(errno)) ?? ""
